@@ -437,7 +437,10 @@ void Button :: execution()
         {
             if (position.SelectByIndex(i))
             {
-                trade.PositionClose(position.Ticket());
+                if (position.Symbol() == _Symbol)
+                {
+                    trade.PositionClose(position.Ticket());
+                }                
             }
         }
     }
