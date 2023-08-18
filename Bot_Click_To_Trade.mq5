@@ -591,39 +591,32 @@ void take_break_even()
 //+------------------------------------------------------------------+
 
 void OnTick()
-{
-    if (time_base01.is_new_candle())
-    {
-        if (alert)
-        {
-            if (all_signal)
-            {
-                tf_base01.alert_up_down();
-                tf_base01.alert_cross();
-            }
-            else if (good_signal)
-            {
-                tf_base01.alert_cross();
-            }
-        }        
-        tf_base01.draw_status();
-    }
-    
+{    
     if (time_base02.is_new_candle())
     {
         if (alert)
         {
-            if (all_signal)
-            {
-                tf_base02.alert_up_down();
-                tf_base02.alert_cross();
-            }
-            else if (good_signal)
-            {
-                tf_base02.alert_cross();
-            }
+            tf_base02.alert_up_down();
+            tf_base02.alert_cross();
         }        
         tf_base02.draw_status();
+    }
+    
+    if (time_base01.is_new_candle())
+    {
+        if (alert)
+        {
+            if (all_signal || good_signal)
+            {
+                tf_base01.alert_up_down();
+                tf_base01.alert_cross();
+            }
+            else if (best_signal)
+            {
+                tf_base01.alert_cross();
+            }            
+        }        
+        tf_base01.draw_status();
     }
     
     if (time_trade.is_new_candle())
