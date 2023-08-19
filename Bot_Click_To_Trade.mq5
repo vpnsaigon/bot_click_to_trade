@@ -14,17 +14,18 @@ input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M1;   // khung thoi gian trade
 input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M5;   // khung thoi gian co so 1
 input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_M30;  // khung thoi gian co so 2
 
-input bool alert        = true; // cho phep alert
-input bool all_signal   = true; // tat ca signal
-input bool good_signal  = true; // signal dong pha 2 chart
-input bool best_signal  = true; // signal dong pha 3 chart
-input bool notification = true; // cho phep notification
+input bool alert        = true;  // cho phep alert
+input bool all_signal   = true;  // tat ca signal
+input bool good_signal  = true;  // signal dong pha 2 chart
+input bool best_signal  = true;  // signal dong pha 3 chart
+input bool notification = true;  // cho phep notification
 
 input double sl_percent = 0.5;   // phan tram stoploss (%)
 input int sl_point_gap  = 10;    // KC cong them vao dinh/day (point)
 
 input bool is_break_even = true; // tu dong keo hoa von
-input double ratio_rr    = 0.8;  // ty le (reward / risk) bat dau keo sl
+input double ratio_rr    = 0.7;  // ty le (reward / risk) bat dau keo sl
+input bool delete_object = false;// xoa moi object
 
 //+------------------------------------------------------------------+
 // CLASS TWO EMA CROSS
@@ -401,7 +402,17 @@ void Button :: get_stoploss_volume()
         int idx = iLowest(_Symbol, tframe_trade, MODE_LOW, 26, 0);
         req.sl = iLow(_Symbol, tframe_trade, idx) - sl_point_gap * _Point;
         
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        {
+            req.sl = iLow(_Symbol, tframe_trade, idx) - sl_point_gap * 10 * _Point;
+        }
+        
         points = (current_ask - req.sl) / _Point;
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        {
+            points = points / 10;
+        }
+        
         req.vol = dollar_sl / points;
         req.vol = NormalizeDouble(req.vol, 2);
     }
@@ -410,7 +421,17 @@ void Button :: get_stoploss_volume()
         int idx = iHighest(_Symbol, tframe_trade, MODE_HIGH, 26, 0);
         req.sl = iHigh(_Symbol, tframe_trade, idx) + sl_point_gap * _Point;
         
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        {
+            req.sl = iHigh(_Symbol, tframe_trade, idx) + sl_point_gap * 10 * _Point;
+        }
+        
         points = (req.sl - current_bid) / _Point;
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        {
+            points = points / 10;
+        }
+        
         req.vol = dollar_sl / points;
         req.vol = NormalizeDouble(req.vol, 2);
     }
@@ -690,7 +711,10 @@ void OnChartEvent(const int id,
 
 void OnDeinit(const int reason)
 {
-    ObjectsDeleteAll(0);
+    if (delete_object)
+    {
+        ObjectsDeleteAll(0);    
+    }    
 }
 
 //+------------------------------------------------------------------+
