@@ -21,7 +21,7 @@ input bool good_signal  = true;  // signal dong pha 2 chart
 input bool best_signal  = true;  // signal dong pha 3 chart
 input bool notification = true;  // cho phep notification
 
-input double sl_percent = 0.5;   // phan tram stoploss (%)
+input double sl_percent = 1.0;   // phan tram stoploss (%)
 input int sl_point_gap  = 10;    // KC cong them vao dinh/day (point)
 
 input bool is_break_even = true; // tu dong keo hoa von
