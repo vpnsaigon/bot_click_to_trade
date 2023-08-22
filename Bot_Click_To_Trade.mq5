@@ -13,7 +13,7 @@ input int sMA_inp = 14; // slow EMA
 input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M1;   // khung thoi gian trade
 input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M5;   // khung thoi gian co so 1
 input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_M30;  // khung thoi gian co so 2
-input ENUM_TIMEFRAMES tframe_base_03 = PERIOD_H4;  // khung thoi gian co so 2
+input ENUM_TIMEFRAMES tframe_base_03 = PERIOD_H4;   // khung thoi gian co so 3
 
 input bool alert        = true;  // cho phep alert
 input bool all_signal   = false; // tat ca signal
@@ -404,20 +404,19 @@ void Button :: get_stoploss_volume()
     double current_ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
     double current_bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
     
+    balance = AccountInfoDouble(ACCOUNT_BALANCE);
+    dollar_sl = balance * sl_percent / 100.0;
+    
     if (_tf_trade.is_up_down() == _up_)
     {
         int idx = iLowest(_Symbol, tframe_trade, MODE_LOW, 26, 0);
         req.sl = iLow(_Symbol, tframe_trade, idx) - sl_point_gap * _Point;
+        points = (current_ask - req.sl) / _Point;
         
         if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
         {
             req.sl = iLow(_Symbol, tframe_trade, idx) - sl_point_gap * 10 * _Point;
-        }
-        
-        points = (current_ask - req.sl) / _Point;
-        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
-        {
-            points = points / 10;
+            points = (current_ask - req.sl) / (_Point * 10);
         }
         
         req.vol = dollar_sl / points;
@@ -432,16 +431,12 @@ void Button :: get_stoploss_volume()
     {
         int idx = iHighest(_Symbol, tframe_trade, MODE_HIGH, 26, 0);
         req.sl = iHigh(_Symbol, tframe_trade, idx) + sl_point_gap * _Point;
+        points = (req.sl - current_bid) / _Point;
         
         if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
         {
             req.sl = iHigh(_Symbol, tframe_trade, idx) + sl_point_gap * 10 * _Point;
-        }
-        
-        points = (req.sl - current_bid) / _Point;
-        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
-        {
-            points = points / 10;
+            points = (req.sl - current_bid) / (_Point * 10);
         }
         
         req.vol = dollar_sl / points;
@@ -540,11 +535,11 @@ string msg_down = StringFormat("%s >>> %s: Down cross ... ", _Symbol, EnumToStri
 
 void alert_good_signal()
 {
-    if (tf_trade.is_cross() == _up_ && tf_base01.is_up_down() == _up_)
+    if (tf_trade.is_cross() == _up_ && (tf_base01.is_up_down() == _up_ || tf_base01.is_up_down() == _sideway_))
     {
         Alert(msg_up);
     }
-    else if (tf_trade.is_cross() == _down_ && tf_base01.is_up_down() == _down_)
+    else if (tf_trade.is_cross() == _down_ && (tf_base01.is_up_down() == _down_ || tf_base01.is_up_down() == _sideway_))
     {
         Alert(msg_down);
     }
