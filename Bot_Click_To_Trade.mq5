@@ -13,9 +13,10 @@ input int sMA_inp = 14; // slow EMA
 input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M1;   // khung thoi gian trade
 input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M5;   // khung thoi gian co so 1
 input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_M30;  // khung thoi gian co so 2
+input ENUM_TIMEFRAMES tframe_base_03 = PERIOD_H4;  // khung thoi gian co so 2
 
 input bool alert        = true;  // cho phep alert
-input bool all_signal   = true;  // tat ca signal
+input bool all_signal   = false; // tat ca signal
 input bool good_signal  = true;  // signal dong pha 2 chart
 input bool best_signal  = true;  // signal dong pha 3 chart
 input bool notification = true;  // cho phep notification
@@ -94,6 +95,12 @@ Two_EMA :: Two_EMA(ENUM_TIMEFRAMES _tframe)
     {
         name_label = "tframe_base_02";        
         x = 220; y = 100;
+        font_size = 14;        
+    }
+    else if (tframe == tframe_base_03)
+    {
+        name_label = "tframe_base_03";        
+        x = 220; y = 130;
         font_size = 14;        
     }
     
@@ -402,18 +409,23 @@ void Button :: get_stoploss_volume()
         int idx = iLowest(_Symbol, tframe_trade, MODE_LOW, 26, 0);
         req.sl = iLow(_Symbol, tframe_trade, idx) - sl_point_gap * _Point;
         
-        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
         {
             req.sl = iLow(_Symbol, tframe_trade, idx) - sl_point_gap * 10 * _Point;
         }
         
         points = (current_ask - req.sl) / _Point;
-        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
         {
             points = points / 10;
         }
         
         req.vol = dollar_sl / points;
+        if (_Digits == 3 && (_Symbol == "USDJPY" || _Symbol == "USDJPYm"))
+        {
+            req.vol = req.vol / 0.682; // 1 pip = $6.82
+        }
+        
         req.vol = NormalizeDouble(req.vol, 2);
     }
     else if (_tf_trade.is_up_down() == _down_)
@@ -421,18 +433,23 @@ void Button :: get_stoploss_volume()
         int idx = iHighest(_Symbol, tframe_trade, MODE_HIGH, 26, 0);
         req.sl = iHigh(_Symbol, tframe_trade, idx) + sl_point_gap * _Point;
         
-        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
         {
             req.sl = iHigh(_Symbol, tframe_trade, idx) + sl_point_gap * 10 * _Point;
         }
         
         points = (req.sl - current_bid) / _Point;
-        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm" || _Symbol == "XAUUSDc"))
+        if (_Digits == 3 && (_Symbol == "XAUUSD" || _Symbol == "XAUUSDm"))
         {
             points = points / 10;
         }
         
         req.vol = dollar_sl / points;
+        if (_Digits == 3 && (_Symbol == "USDJPY" || _Symbol == "USDJPYm"))
+        {
+            req.vol = req.vol / 0.682; // 1 pip = $6.82
+        }
+        
         req.vol = NormalizeDouble(req.vol, 2);
     }
 }
@@ -500,10 +517,12 @@ void Button :: update_button_info()
 Two_EMA tf_trade(tframe_trade);
 Two_EMA tf_base01(tframe_base_01);
 Two_EMA tf_base02(tframe_base_02);
+Two_EMA tf_base03(tframe_base_03);
 
 New_Candle time_trade(tframe_trade);
 New_Candle time_base01(tframe_base_01);
 New_Candle time_base02(tframe_base_02);
+New_Candle time_base03(tframe_base_03);
 
 Button btn_close(_close_);
 Button btn_sell(_sell_);
@@ -612,7 +631,17 @@ void take_break_even()
 //+------------------------------------------------------------------+
 
 void OnTick()
-{    
+{   
+    if (time_base03.is_new_candle())
+    {
+        if (alert)
+        {
+            tf_base03.alert_up_down();
+            tf_base03.alert_cross();
+        }        
+        tf_base03.draw_status();
+    }
+    
     if (time_base02.is_new_candle())
     {
         if (alert)
