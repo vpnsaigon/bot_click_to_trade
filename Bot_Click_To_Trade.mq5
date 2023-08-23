@@ -753,6 +753,7 @@ int OnInit()
     tf_trade.draw_status();
     tf_base01.draw_status();
     tf_base02.draw_status();
+    tf_base03.draw_status();
         
     btn_close.create_button();
     btn_buy.create_button();
