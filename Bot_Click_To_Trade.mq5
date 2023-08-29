@@ -8,7 +8,7 @@
 #property version   "1.00"
 
 input int fMA_inp = 8;  // fast EMA
-input int sMA_inp = 14; // slow EMA
+input int sMA_inp = 13; // slow EMA
 
 input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M1;   // khung thoi gian trade
 input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M5;   // khung thoi gian co so 1
@@ -773,6 +773,94 @@ void Trading_Session :: delete_objects()
 }
 
 //+------------------------------------------------------------------+
+// COUNTING TIME
+//+------------------------------------------------------------------+
+
+class Count_Time
+{
+private:
+    string tt_name;
+    datetime time, time1, subtime; 
+    int riptime, hh, mm, ss;
+    double price;
+    string text;
+    int font_size;
+    color clr;
+    bool back;
+    
+public:
+    Count_Time();
+    void text_time();
+    void delete_objects();
+};
+
+Count_Time :: Count_Time()
+{
+    tt_name = "text_time";
+    time = TimeCurrent() + _Period * 5 * 60;
+    price = iClose(_Symbol, _Period, 0);
+    text = "";
+    font_size = 8;
+    clr = clrOrange;
+    back = true;
+}
+
+void Count_Time :: text_time()
+{
+    time = TimeCurrent() + _Period * 5 * 60;
+    price = iClose(_Symbol, _Period, 0);
+    
+    subtime = TimeCurrent() - iTime(_Symbol, _Period, 0);
+    riptime = _Period * 60 - int(subtime);
+    
+    if (_Period >= PERIOD_H1)
+    {
+        text = "";
+        ObjectDelete(0, tt_name);
+    }
+    else
+    {
+        mm = riptime / 60;
+        ss = riptime % 60;
+        
+        if (mm < 10)
+        {
+            if (ss < 10)
+            {
+                text = StringFormat("<<<  0%d:0%d", mm, ss);
+            }
+            else
+            {
+                text = StringFormat("<<<  0%d:%d", mm, ss);
+            }
+        }
+        else
+        {
+            if (ss < 10)
+            {
+                text = StringFormat("<<<  %d:0%d", mm, ss);
+            }
+            else
+            {
+                text = StringFormat("<<<  %d:%d", mm, ss);
+            }
+        }
+    }
+    
+    ObjectDelete(0, tt_name);
+    ObjectCreate(0, tt_name, OBJ_TEXT, 0, time, price);
+    ObjectSetString(0, tt_name, OBJPROP_TEXT, text);
+    ObjectSetInteger(0, tt_name, OBJPROP_FONTSIZE, font_size);
+    ObjectSetInteger(0, tt_name, OBJPROP_COLOR, clr);
+    ObjectSetInteger(0, tt_name, OBJPROP_BACK, back);
+}
+
+void Count_Time :: delete_objects()
+{
+    ObjectDelete(0, tt_name);
+}
+
+//+------------------------------------------------------------------+
 // CREATE ALL INSTANCE
 //+------------------------------------------------------------------+
 
@@ -797,6 +885,8 @@ Trading_Session sydney(_sydney_);
 Trading_Session tokyo(_tokyo_);
 Trading_Session london(_london_);
 Trading_Session newyork(_newyork_);
+
+Count_Time count_time;
 
 //+------------------------------------------------------------------+
 // ALERT GOOD SIGNAL
@@ -1026,7 +1116,11 @@ void OnTick()
     
     // comment volume
     show_orders_volume();
-    Sleep(50);
+    
+    // couting time
+    count_time.text_time();
+    
+    Sleep(10);
 }
 
 //+------------------------------------------------------------------+
@@ -1053,35 +1147,6 @@ void OnChartEvent(const int id,
             btn_close.execution();
         }
     }
-}
-
-//+------------------------------------------------------------------+
-// DESTROYS ALL
-//+------------------------------------------------------------------+
-
-void OnDeinit(const int reason)
-{
-    if (clear_all_objects)
-    {
-        ObjectsDeleteAll(0);    
-    }
-    
-    tf_trade.delete_objects();
-    tf_base01.delete_objects();
-    tf_base02.delete_objects();
-    tf_base03.delete_objects();
-    
-    btn_close.delete_objects();
-    btn_buy.delete_objects();    
-    btn_sell.delete_objects();
-    btn_dollar_sl.delete_objects();
-    btn_points.delete_objects();
-    btn_vol.delete_objects();
-    
-    sydney.delete_objects();
-    tokyo.delete_objects();
-    london.delete_objects();
-    newyork.delete_objects();
 }
 
 //+------------------------------------------------------------------+
@@ -1140,4 +1205,34 @@ int OnInit()
     return (INIT_SUCCEEDED);
 }
 
+//+------------------------------------------------------------------+
+// DESTROYS ALL
+//+------------------------------------------------------------------+
+
+void OnDeinit(const int reason)
+{
+    if (clear_all_objects)
+    {
+        ObjectsDeleteAll(0);    
+    }
+    
+    tf_trade.delete_objects();
+    tf_base01.delete_objects();
+    tf_base02.delete_objects();
+    tf_base03.delete_objects();
+    
+    btn_close.delete_objects();
+    btn_buy.delete_objects();    
+    btn_sell.delete_objects();
+    btn_dollar_sl.delete_objects();
+    btn_points.delete_objects();
+    btn_vol.delete_objects();
+    
+    sydney.delete_objects();
+    tokyo.delete_objects();
+    london.delete_objects();
+    newyork.delete_objects();
+    
+    count_time.delete_objects();
+}
 
