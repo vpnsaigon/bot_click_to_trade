@@ -928,9 +928,9 @@ void show_orders_volume()
             profits += position.Profit();
         }
     }
-    string msg = "- - - - - - - - - - - - - - - - - -";
+    string msg = "\n\n- - - - - - - - - - - - - - - - - -";
     msg += StringFormat("\n_____ %s _____", _Symbol);
-    msg += StringFormat("\nBuy: %d - Volume: %0.2f\nSell.: %d - Volume: %0.2f", countB, volB, countS, volS);
+    msg += StringFormat("\n\nBuy: %d - Volume: %0.2f\nSell.: %d - Volume: %0.2f", countB, volB, countS, volS);
     msg += StringFormat("\n\nPnL: $ %0.2f", profits);
     msg += "\n- - - - - - - - - - - - - - - - - -";
     Comment(msg);
