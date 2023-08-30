@@ -10,9 +10,9 @@
 input int fMA_inp = 8;  // fast EMA
 input int sMA_inp = 13; // slow EMA
 
-input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M1;   // khung thoi gian trade
-input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M5;   // khung thoi gian co so 1
-input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_M30;  // khung thoi gian co so 2
+input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M3;   // khung thoi gian trade
+input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M15;   // khung thoi gian co so 1
+input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_H1;  // khung thoi gian co so 2
 input ENUM_TIMEFRAMES tframe_base_03 = PERIOD_H4;   // khung thoi gian co so 3
 
 input bool alert        = false;  // cho phep alert
@@ -27,9 +27,11 @@ input int sl_point_gap  = 50;    // KC cong them vao dinh/day (point)
 input bool is_break_even = true;        // tu dong keo hoa von
 input double ratio_rr    = 0.7;         // ty le (reward / risk) bat dau keo sl
 input bool clear_all_objects = false;   // xoa moi object
-input bool draw_rec   = true;           // ve phien giao dich
+
+input bool draw_rec     = true;         // ve phien giao dich
 input bool f_draw_vline = true;         // ve duong vline bat dau
 input bool s_draw_vline = true;         // ve duong vline ket thuc
+input int offset_ss     = 0;            // offset gio gd theo mua
 input bool is_chart_setting = true;     // template mac dinh
 
 //+------------------------------------------------------------------+
@@ -88,13 +90,13 @@ Two_EMA :: Two_EMA(ENUM_TIMEFRAMES _tframe)
     {
         name_label = "tframe_trade";        
         x = 220; y = 70;
-        font_size = 12;        
+        font_size = 11;        
     }
     else if (tframe == tframe_base_01)
     {
         name_label = "tframe_base_01";        
         x = 220; y = 100;
-        font_size = 14;        
+        font_size = 12;        
     }
     else if (tframe == tframe_base_02)
     {
@@ -369,7 +371,7 @@ Button :: Button(button_type _type)
     {
         name_button = "_dollar_sl_";
         x = 110; y = 210;
-        text = StringFormat("sl ~ %0.1f$", sl_dollar);
+        text = StringFormat("sl ~ %0.1f $", sl_dollar);
         clr = clrGray;
         font_size = 11;
     }
@@ -533,7 +535,7 @@ void Button :: update_button_info()
     
     if (type == _dollar_sl_)
     {
-        text = StringFormat("sl ~ %0.1f$", sl_dollar);
+        text = StringFormat("sl ~ %0.1f $", sl_dollar);
         ObjectSetString(0, name_button, OBJPROP_TEXT, text);
     }
     else if (type == _p_sl_sell_)
@@ -574,7 +576,7 @@ private:
     int session_name;
     string name1, name2, name_rec;
     datetime date, time1, time2;
-    double price1, price2, max, min;
+    double price1, price2, max, min, pass_price;
     color clr;
     ENUM_LINE_STYLE style1, style2, style_rec;
     int width1, width2;
@@ -611,7 +613,7 @@ Trading_Session :: Trading_Session(int _name)
         name1 = "_sydney_1";
         name2 = "_sydney_2";
         name_rec = "_sydney_rec";
-        clr = clrTurquoise;
+        clr = clrDarkTurquoise;
     }
     if (session_name == _tokyo_)
     {
@@ -645,37 +647,66 @@ void Trading_Session :: get_coordinates()
     max = ChartGetDouble(0, CHART_FIXED_MAX);
     min = ChartGetDouble(0, CHART_FIXED_MIN);
     
+    pass_price = iClose(_Symbol, PERIOD_M5, 1);
+    
     if (session_name == _sydney_)
     {        
-        time1 = date + 0;
+        time1 = date + (0 + offset_ss)*3600;
         price1 = max - (max - min)*0.005;
         
-        time2 = date + 9*3600;
+        time2 = date + (9 + offset_ss)*3600;
         price2 = max - (max - min)*0.015;
+        
+        if (pass_price >= min + 2 / 3.0 * (max - min))
+        {
+            price1 = min + (max - min)*0.005;
+            price2 = min + (max - min)*0.015;
+        }
     }
+    
     if (session_name == _tokyo_)
     {
-        time1 = date + 3*3600;
+        time1 = date + (3 + offset_ss)*3600;
         price1 = max - (max - min)*0.02;
         
-        time2 = date + 12*3600;
+        time2 = date + (12 + offset_ss)*3600;
         price2 = max - (max - min)*0.03;
+        
+        if (pass_price >= min + 2 / 3.0 * (max - min))
+        {
+            price1 = min + (max - min)*0.020;
+            price2 = min + (max - min)*0.030;
+        }
     }
+    
     if (session_name == _london_)
     {
-        time1 = date + 10*3600;
+        time1 = date + (10 + offset_ss)*3600;
         price1 = max - (max - min)*0.035;
         
-        time2 = date + 19*3600;
+        time2 = date + (19 + offset_ss)*3600;
         price2 = max - (max - min)*0.045;
+        
+        if (pass_price >= min + 2 / 3.0 * (max - min))
+        {
+            price1 = min + (max - min)*0.035;
+            price2 = min + (max - min)*0.045;
+        }
     }
+    
     if (session_name == _newyork_)
     {
-        time1 = date + 15*3600;
+        time1 = date + (15 + offset_ss)*3600;
         price1 = max - (max - min)*0.05;
         
-        time2 = date + 24*3600;
+        time2 = date + (24 + offset_ss)*3600;
         price2 = max - (max - min)*0.06;
+        
+        if (pass_price >= min + 2 / 3.0 * (max - min))
+        {
+            price1 = min + (max - min)*0.050;
+            price2 = min + (max - min)*0.060;
+        }
     }
 }
 
@@ -797,7 +828,7 @@ public:
 Count_Time :: Count_Time()
 {
     tt_name = "text_time";
-    time = TimeCurrent() + _Period * 5 * 60;
+    time = TimeCurrent() + _Period * 2 * 60;
     price = iClose(_Symbol, _Period, 0);
     text = "";
     font_size = 8;
@@ -807,7 +838,7 @@ Count_Time :: Count_Time()
 
 void Count_Time :: text_time()
 {
-    time = TimeCurrent() + _Period * 5 * 60;
+    time = TimeCurrent() + _Period * 2 * 60;
     price = iClose(_Symbol, _Period, 0);
     
     subtime = TimeCurrent() - iTime(_Symbol, _Period, 0);
@@ -827,22 +858,22 @@ void Count_Time :: text_time()
         {
             if (ss < 10)
             {
-                text = StringFormat("<<<  0%d:0%d", mm, ss);
+                text = StringFormat("<<< 0%d:0%d", mm, ss);
             }
             else
             {
-                text = StringFormat("<<<  0%d:%d", mm, ss);
+                text = StringFormat("<<< 0%d:%d", mm, ss);
             }
         }
         else
         {
             if (ss < 10)
             {
-                text = StringFormat("<<<  %d:0%d", mm, ss);
+                text = StringFormat("<<< %d:0%d", mm, ss);
             }
             else
             {
-                text = StringFormat("<<<  %d:%d", mm, ss);
+                text = StringFormat("<<< %d:%d", mm, ss);
             }
         }
     }
