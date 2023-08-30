@@ -11,15 +11,15 @@ input int fMA_inp = 8;  // fast EMA
 input int sMA_inp = 13; // slow EMA
 
 input ENUM_TIMEFRAMES tframe_trade   = PERIOD_M3;   // khung thoi gian trade
-input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M15;   // khung thoi gian co so 1
-input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_H1;  // khung thoi gian co so 2
+input ENUM_TIMEFRAMES tframe_base_01 = PERIOD_M15;  // khung thoi gian co so 1
+input ENUM_TIMEFRAMES tframe_base_02 = PERIOD_H1;   // khung thoi gian co so 2
 input ENUM_TIMEFRAMES tframe_base_03 = PERIOD_H4;   // khung thoi gian co so 3
 
 input bool alert        = false;  // cho phep alert
 input bool all_signal   = false;  // tat ca signal
 input bool good_signal  = true;   // signal dong pha 2 chart
 input bool best_signal  = true;   // signal dong pha 3 chart
-input bool notification = true;   // cho phep notification
+input bool notification = false;  // cho phep notification
 
 input double sl_percent = 1.0;   // phan tram stoploss (%)
 input int sl_point_gap  = 50;    // KC cong them vao dinh/day (point)
@@ -89,26 +89,26 @@ Two_EMA :: Two_EMA(ENUM_TIMEFRAMES _tframe)
     if (tframe == tframe_trade)
     {
         name_label = "tframe_trade";        
-        x = 220; y = 70;
-        font_size = 11;        
+        x = 200; y = 80;
+        font_size = 10;        
     }
     else if (tframe == tframe_base_01)
     {
         name_label = "tframe_base_01";        
-        x = 220; y = 100;
-        font_size = 12;        
+        x = 200; y = 105;
+        font_size = 11;        
     }
     else if (tframe == tframe_base_02)
     {
         name_label = "tframe_base_02";        
-        x = 220; y = 130;
-        font_size = 14;        
+        x = 200; y = 130;
+        font_size = 13;        
     }
     else if (tframe == tframe_base_03)
     {
         name_label = "tframe_base_03";        
-        x = 220; y = 160;
-        font_size = 14;        
+        x = 200; y = 160;
+        font_size = 13;        
     }
     
     // draw on chart
@@ -334,7 +334,7 @@ Button :: Button(button_type _type)
 {
     corner = CORNER_RIGHT_UPPER;
     font_size = 16;
-    width = 100; height = 50;
+    width = 90; height = 40;
     type = _type;
     
     req.sl_b = 0;
@@ -349,47 +349,47 @@ Button :: Button(button_type _type)
     if (_type == _close_)
     {
         name_button = "_close_";
-        x = 220; y = 210;
+        x = 200; y = 210;
         text = "CLOSE";
         clr = clrGray;
     }    
     else if (_type == _sell_)
     {
         name_button = "_sell_";
-        x = 220; y = 280;
+        x = 200; y = 270;
         text = "SELL";
         clr = clrRed;
     }
     else if (_type == _buy_)
     {
         name_button = "_buy_";
-        x = 220; y = 350;
+        x = 200; y = 330;
         text = "BUY";
         clr = clrBlue;
     }
     else if (_type == _dollar_sl_)
     {
         name_button = "_dollar_sl_";
-        x = 110; y = 210;
+        x = 100; y = 210;
         text = StringFormat("sl ~ %0.1f $", sl_dollar);
         clr = clrGray;
-        font_size = 11;
+        font_size = 10;
     }
     else if (_type == _p_sl_sell_)
     {
         name_button = "_p_sl_sell_";
-        x = 110; y = 280;
+        x = 100; y = 270;
         text = StringFormat("%d ~ %0.2f", int(points_s), req.vol_s);
         clr = clrGray;
-        font_size = 11;
+        font_size = 10;
     }
     else if (_type == _p_sl_buy_)
     {
         name_button = "_p_sl_buy_";
-        x = 110; y = 350;
+        x = 100; y = 330;
         text = StringFormat("%d ~ %0.2f", int(points_b), req.vol_b);
         clr = clrGray;
-        font_size = 11;
+        font_size = 10;
     }
     
     // create button
