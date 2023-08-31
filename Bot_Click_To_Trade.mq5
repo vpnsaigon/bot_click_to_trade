@@ -647,7 +647,7 @@ void Trading_Session :: get_coordinates()
     max = ChartGetDouble(0, CHART_FIXED_MAX);
     min = ChartGetDouble(0, CHART_FIXED_MIN);
     
-    pass_price = iClose(_Symbol, PERIOD_M5, 1);
+    pass_price = iClose(_Symbol, PERIOD_M1, 1);
     
     if (session_name == _sydney_)
     {        
@@ -844,7 +844,7 @@ void Count_Time :: text_time()
     subtime = TimeCurrent() - iTime(_Symbol, _Period, 0);
     riptime = _Period * 60 - int(subtime);
     
-    if (_Period >= PERIOD_H1)
+    if (_Period >= PERIOD_M30)
     {
         text = "";
         ObjectDelete(0, tt_name);
@@ -1020,6 +1020,7 @@ void take_break_even()
 
 int countB, countS;
 double volB, volS, profits;
+string msg;
 
 void show_orders_volume()
 {
@@ -1049,11 +1050,14 @@ void show_orders_volume()
             profits += position.Profit();
         }
     }
-    string msg = "\n\n- - - - - - - - - - - - - - - - - -";
+    
+    msg = "\n\n- - - - - - - - - - - - - - - - - -";
     msg += StringFormat("\n_____ %s _____", _Symbol);
     msg += StringFormat("\n\nBuy: %d - Volume: %0.2f\nSell.: %d - Volume: %0.2f", countB, volB, countS, volS);
-    msg += StringFormat("\n\nPnL: $ %0.2f", profits);
+    msg += StringFormat("\n\nDiff: %0.2f", MathAbs(volB - volS));
+    msg += StringFormat("\nPnL: $ %0.2f", profits);    
     msg += "\n- - - - - - - - - - - - - - - - - -";
+    
     Comment(msg);
 }
 
