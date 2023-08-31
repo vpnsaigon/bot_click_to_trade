@@ -20,7 +20,6 @@ input bool all_signal   = false;  // tat ca signal
 input bool good_signal  = true;   // signal dong pha 2 chart
 input bool best_signal  = true;   // signal dong pha 3 chart
 input bool notification = false;  // cho phep notification
-
 input double sl_percent = 1.0;   // phan tram stoploss (%)
 input int sl_point_gap  = 50;    // KC cong them vao dinh/day (point)
 
@@ -716,7 +715,7 @@ void Trading_Session :: draw_object()
     s_draw_vline_ = s_draw_vline;
     draw_rec_ = draw_rec;
     
-    if (_Period >= PERIOD_H1)
+    if (_Period >= PERIOD_M30)
     {
         f_draw_vline_ = false;
         s_draw_vline_ = false;
@@ -844,7 +843,7 @@ void Count_Time :: text_time()
     subtime = TimeCurrent() - iTime(_Symbol, _Period, 0);
     riptime = _Period * 60 - int(subtime);
     
-    if (_Period >= PERIOD_M30)
+    if (_Period >= PERIOD_H1)
     {
         text = "";
         ObjectDelete(0, tt_name);
